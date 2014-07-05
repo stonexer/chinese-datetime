@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=chinese-calendar-autostart
+Name[zh_CN]=中国农历开机启动
+Comment=Chinese lunar calendar auto start
+Exec=/usr/bin/chinese-calendar-autostart
+Icon=chinesecalendar-64.png
+StartupNotify=true
+Terminal=false
+Type=Application
+Categories=GNOME;GTK;Graphics;RasterGraphics;Viewer;

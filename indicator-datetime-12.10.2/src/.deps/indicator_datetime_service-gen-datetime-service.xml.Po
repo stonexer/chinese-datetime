@@ -1,0 +1,2 @@
+indicator_datetime_service-gen-datetime-service.xml.o: \
+ gen-datetime-service.xml.c

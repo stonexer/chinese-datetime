@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=com.canonical.indicator.application
+Exec=@libexecdir@/indicator-application-service
