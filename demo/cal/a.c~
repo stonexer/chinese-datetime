@@ -1,0 +1,8 @@
+#include "stdio.h"
+#include "Lunar.h"
+
+int main()
+{
+   PrfOneDay("19990909","-g");
+}
+
