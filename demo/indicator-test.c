@@ -52,20 +52,16 @@ scroll_event_cb (AppIndicator * ci, gint delta, guint direction, gpointer data)
 }
 
 /*
-*判断是否闰年
-*参数:   y 整型, 接收年份值
-*返回值: 整型, 只为0或1, 0代表假, 1代表真
+*判断是否闰年    y=年份值
 */
 int isRunNian(int y)
 {
-    return (y % 4 == 0 && y % 100 != 0 || y % 400 == 0) ? 1 : 0;
+    return ( (y % 4 == 0 && y % 100 != 0) || y % 400 == 0) ? 1 : 0;
 }
 
 /*
 *计算某个月的天数
 *参数:   y 整型,接收年份值; m 整型,接收月份值;
-*返回值: 整型, 是0, 28, 29, 30, 31之间的一个数
-*注意:   返回值为0,表示你调用该函数时传递了不正确的年份值或月份值.
 */
 int getDays(int y, int m)
 {
@@ -114,6 +110,116 @@ int Week(int y,int m,int d)
     return days % 7; //返回星期值
 }
 
+
+int lunar(int year, int mon, int day,char szNongli[100],char szNongliDay[20],char szaday[10])
+{
+    char szShuXiang[10];
+
+    /*天干名称*/
+    const char *cTianGan[] = {"甲","乙","丙","丁","戊","己","庚","辛","壬","癸"};
+    /*地支名称*/
+    const char *cDiZhi[] = {"子","丑","寅","卯","辰","巳","午","未","申","酉","戌","亥"};
+    /*属相名称*/
+    const char *cShuXiang[] = {"鼠","牛","虎","兔","龙","蛇","马","羊","猴","鸡","狗","猪"};
+    /*农历日期名*/
+    const char *cDayName[] = {"*","初一","初二","初三","初四","初五",
+                              "初六","初七","初八","初九","初十","十一","十二","十三","十四","十五","十六","十七","十八","十九","二十","廿一","廿二","廿三","廿四","廿五","廿六","廿七","廿八","廿九","三十"
+                             };
+    /*农历月份名*/
+    const char *cMonName[] = {"*","正","二","三","四","五","六","七","八","九","十","十一","腊"};
+
+    /*公历每月前面的天数*/
+    const int wMonthAdd[12] = {0,31,59,90,120,151,181,212,243,273,304,334};
+    /*农历数据*/
+    const int wNongliData[100] = {2635,333387,1701,1748,267701,694,2391,133423,1175,396438
+                                  ,3402,3749,331177,1453,694,201326,2350,465197,3221,3402
+                                  ,400202,2901,1386,267611,605,2349,137515,2709,464533,1738
+                                  ,2901,330421,1242,2651,199255,1323,529706,3733,1706,398762
+                                  ,2741,1206,267438,2647,1318,204070,3477,461653,1386,2413
+                                  ,330077,1197,2637,268877,3365,531109,2900,2922,398042,2395
+                                  ,1179,267415,2635,661067,1701,1748,398772,2742,2391,330031
+                                  ,1175,1611,200010,3749,527717,1452,2742,332397,2350,3222
+                                  ,268949,3402,3493,133973,1386,464219,605,2349,334123,2709
+                                  ,2890,267946,2773,592565,1210,2651,395863,1323,2707,265877
+                                 };
+    static int wCurYear,wCurMonth,wCurDay;
+    static int nTheDate,nIsEnd,m,k,n,i,nBit;
+    /*---取当前公历年、月、日---*/
+    wCurYear = year + 1900;
+    wCurMonth = mon + 1;
+    wCurDay = day;
+    /*---计算到初始时间1921年2月8日的天数：1921-2-8(正月初一)---*/
+    nTheDate = (wCurYear - 1921) * 365 + (wCurYear - 1921) / 4 + wCurDay + wMonthAdd[wCurMonth - 1] - 38;
+    if((!(wCurYear % 4)) && (wCurMonth > 2))
+        nTheDate = nTheDate + 1;
+
+
+
+    /*--计算农历天干、地支、月、日---*/
+    nIsEnd = 0;
+    m = 0;
+    while(nIsEnd != 1)
+    {
+        if(wNongliData[m] < 4095)
+            k = 11;
+        else
+            k = 12;
+        n = k;
+        while(n>=0)
+        {
+            //获取wNongliData(m)的第n个二进制位的值
+            nBit = wNongliData[m];
+            for(i=1; i<n+1; i++)
+                nBit = nBit/2;
+
+            nBit = nBit % 2;
+
+            if (nTheDate <= (29 + nBit))
+            {
+                nIsEnd = 1;
+                break;
+            }
+
+            nTheDate = nTheDate - 29 - nBit;
+            n = n - 1;
+        }
+        if(nIsEnd)
+            break;
+        m = m + 1;
+    }
+    wCurYear = 1921 + m;
+    wCurMonth = k - n + 1;
+    wCurDay = nTheDate;
+    if (k == 12)
+    {
+        if (wCurMonth == wNongliData[m] / 65536 + 1)
+            wCurMonth = 1 - wCurMonth;
+        else if (wCurMonth > wNongliData[m] / 65536 + 1)
+            wCurMonth = wCurMonth - 1;
+    }
+
+
+
+    /*--生成农历天干、地支、属相 ==> wNongli--*/
+    sprintf( szShuXiang,"%s",cShuXiang[((wCurYear - 4) % 60) % 12] );
+
+    sprintf(szNongli,"%s(%s%s)年",szShuXiang,cTianGan[((wCurYear - 4) % 60) % 10],cDiZhi[((wCurYear - 4) % 60) % 12]);
+
+    /*--生成农历月、日 ==> wNongliDay--*/
+    if (wCurMonth < 1)
+        sprintf(szNongliDay,"闰%s",cMonName[-1 * wCurMonth]);
+    else
+        strcpy(szNongliDay,cMonName[wCurMonth]);
+
+    strcat(szNongliDay,"月");
+    strcat(szNongliDay,cDayName[wCurDay]);
+
+    sprintf(szaday,"%s",cDayName[wCurDay]);
+
+    return 0;
+}
+
+
 int main (int argc, char **argv)
 {
     GtkWidget *calendar;
@@ -137,6 +243,8 @@ int main (int argc, char **argv)
     struct tm *tblock;
     timer = time(NULL);
     tblock = localtime(&timer);
+
+    int i,j,m;
 
     //判断星期
     switch(tblock->tm_wday)
@@ -164,42 +272,57 @@ int main (int argc, char **argv)
         break;
     }
 
-    sprintf(s_time,"%d年%d月%d日 %s",tblock->tm_year + 1900,tblock->tm_mon + 1,tblock->tm_mday,s_wday);
+    sprintf(s_time,"%d年%d月%d日    %s",tblock->tm_year + 1900,tblock->tm_mon + 1,tblock->tm_mday,s_wday);
     label_item = gtk_menu_item_new_with_label(s_time);
     gtk_menu_shell_append(GTK_MENU_SHELL(indicator_menu), label_item);
 
-    label_item = gtk_menu_item_new_with_label("\t马年\t八月初五");
+
+    char Nongli[100];
+    char NongliDay[20];
+    char aday[10];
+
+    lunar(tblock->tm_year,tblock->tm_mon,tblock->tm_mday,Nongli,NongliDay,aday);
+
+    char s_nongli[100];
+    sprintf(s_nongli,"%s\t%s",Nongli,NongliDay);
+
+    label_item = gtk_menu_item_new_with_label(s_nongli);
     gtk_menu_shell_append(GTK_MENU_SHELL(indicator_menu), label_item);
 
     //分割
     sep = gtk_separator_menu_item_new();
     gtk_menu_shell_append(GTK_MENU_SHELL(indicator_menu), sep);
 
-    int i,j;
+    char s_ym[100];
+    sprintf(s_ym,"%d年                       %d月",tblock->tm_year + 1900,tblock->tm_mon + 1);
+
+    label_item = gtk_menu_item_new_with_label(s_ym);
+    gtk_menu_shell_append(GTK_MENU_SHELL(indicator_menu), label_item);
 
     int y = tblock->tm_year + 1900; //得到当前年份
-    int m = tblock->tm_mon + 1;
+    m = tblock->tm_mon + 1;
 
     int day = 1 - Week(y,m,1); //天数初始值，定位1号的位置
     int days = getDays(y,m);
 
-    label_item = gtk_menu_item_new_with_label("日\t一\t二\t三\t四\t五\t六");
+    label_item = gtk_menu_item_new_with_label("   日      一      二      三      四      五      六");
     gtk_menu_shell_append(GTK_MENU_SHELL(indicator_menu), label_item);
 
+    int j2;
 
     for(i = 1; i <= 6; i++)
     {
-        char s_days[20] ="";
+        char s_days[20] ="  ";
         char s_aday[10];
         for(j = 1; j <= 7; j++)
         {
             if(day <= 0 || day > days)
-                strcat(s_days,"   ");
+                strcat(s_days,"     ");
             else
             {
                 if(day<10)
                 {
-                    sprintf(s_aday," %d",day);
+                    sprintf(s_aday,"  %d",day);
                     strcat(s_days,s_aday);
                 }
                 else
@@ -208,12 +331,34 @@ int main (int argc, char **argv)
                     strcat(s_days,s_aday);
                 }
             }
-            j < 7 ? strcat(s_days,"\t") : i < 6 ? strcat(s_days,"\t") : strcat(s_days,"\t");
+            j < 7 ? strcat(s_days,"      ") : i < 6 ? strcat(s_days,"      ") : strcat(s_days,"      ");
             day++;
         }
         label_item = gtk_menu_item_new_with_label(s_days);
         gtk_menu_shell_append(GTK_MENU_SHELL(indicator_menu), label_item);
+
+        day = day - 7;
+
+        char s2_days[100] ="";
+        char s2_aday[20];
+
+        for(j2 = 1; j2 <= 7; j2++)
+        {
+            if(day <= 0 || day > days)
+                strcat(s2_days,"         ");
+            else
+            {
+                    lunar(tblock->tm_year,tblock->tm_mon,day,Nongli,NongliDay,aday);
+                    sprintf(s2_aday," %s",aday);
+                    strcat(s2_days,s2_aday);
+            }
+            j < 7 ? strcat(s2_days,"") : i < 6 ? strcat(s2_days,"") : strcat(s2_days,"");
+            day++;
+        }
+        label_item = gtk_menu_item_new_with_label(s2_days);
+        gtk_menu_shell_append(GTK_MENU_SHELL(indicator_menu), label_item);
     }
+
 
     //quit item
     //quit_item = gtk_menu_item_new_with_label("退出");
