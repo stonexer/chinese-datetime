@@ -1,0 +1,2 @@
+libappindicator_la-gen-notification-watcher.xml.lo: \
+ gen-notification-watcher.xml.c

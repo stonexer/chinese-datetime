@@ -1,0 +1,2 @@
+#!/bin/sh
+MONO_PATH=../../../bindings/mono ../../../bindings/mono/examples/IndicatorExample.exe

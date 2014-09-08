@@ -1,0 +1,2 @@
+libappindicator_la-gen-notification-item.xml.lo: \
+ gen-notification-item.xml.c
